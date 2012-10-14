@@ -1,7 +1,7 @@
-.PHONY: test tests
+.PHONY: test coverage
 
-tests test:
-	@./tests.py
+test:
+	@nosetests
 
 coverage:
-	@nosetests tests.py --with-coverage --cover-erase --cover-package readline
+	@nosetests --with-coverage --cover-erase
