@@ -21,7 +21,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""An attempt at creating a fast version of socket.readline()"""
+"""An attempt at creating a fast version of socket.makefile().readline()"""
 
 def readline(socket, size=4096):
     last_pos = 0
