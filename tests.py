@@ -1,64 +1,46 @@
 #! /usr/bin/env python
 
-from gevent import monkey
-monkey.patch_all()
-
-import socket
 import unittest
 from readline import readline
 
+class MockSocket(object):
+    def __init__(self, buf):
+        self.buf = buf
+
+    def recv(self, size=1024):
+        print type(size), size
+        retval = self.buf[0:size]
+        self.buf = self.buf[size:]
+        return retval
+
 class ReadlineTests(unittest.TestCase):
-    def setUp(self):
-        # Default buffer to test against
-        self.buffer = "foo\nbar\nbaz\n"
+    def get_iterator(self, buf="foo\nbar\nbaz\n", recv_len=1024):
+        return readline(MockSocket(buf), recv_len)
 
-        from gevent.server import StreamServer
-        def handle(socket, address):
-            socket.sendall(self.buffer)
-            socket.close()
-
-        server = StreamServer(("127.0.0.1", 0), handle)
-        server.start()
-        self.server_port = server.server_port
-
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect(("127.0.0.1", self.server_port))
-
-    def tearDown(self):
-        if self.socket:
-            self.socket.close()
-
-    def get_connection(self, size=4096):
-        return readline(self.socket, size)
-
-    def test_everything_in_buffer(self):
-        generator = self.get_connection()
+    def test_read_buffer_until_end(self):
+        generator = self.get_iterator()
         self.assertEquals(next(generator), "foo")
         self.assertEquals(next(generator), "bar")
         self.assertEquals(next(generator), "baz")
         with self.assertRaises(StopIteration):
             next(generator)
 
-    def test_recv_1(self):
-        generator = self.get_connection(1)
+    def test_read_buffer_until_end_without_ending_newline(self):
+        generator = self.get_iterator("foo\nbar\nbaz")
         self.assertEquals(next(generator), "foo")
         self.assertEquals(next(generator), "bar")
         self.assertEquals(next(generator), "baz")
         with self.assertRaises(StopIteration):
             next(generator)
 
-    def test_not_a_socket(self):
+    def test_recv_with_a_length_of_one(self):
+        generator = self.get_iterator(recv_len=1)
+        self.assertEquals(next(generator), "foo")
+        self.assertEquals(next(generator), "bar")
+        self.assertEquals(next(generator), "baz")
+        with self.assertRaises(StopIteration):
+            next(generator)
+
+    def test_pass_something_that_doesnt_have_a_recv_method(self):
         with self.assertRaises(Exception):
             next(readline(None))
-
-    def test_no_ending_newline(self):
-        self.buffer = "foo\nbar\nbaz"
-        generator = self.get_connection()
-        self.assertEquals(next(generator), "foo")
-        self.assertEquals(next(generator), "bar")
-        self.assertEquals(next(generator), "baz")
-        with self.assertRaises(StopIteration):
-            next(generator)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
