@@ -1,4 +1,7 @@
-A fast socket.readline implementation
+A faster socket.makefile().readline implementation
+
+readline is a generator function that keeps on returning lines until there
+is no more data to be read.
 
 Example usage
 ```
