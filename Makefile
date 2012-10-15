@@ -1,7 +1,7 @@
-.PHONY: test coverage
+.PHONY: test test-coverage
 
 test:
 	@nosetests
 
-coverage:
-	@nosetests --with-coverage --cover-erase
+test-coverage:
+	@nosetests --with-coverage --cover-erase --cover-package=readline
