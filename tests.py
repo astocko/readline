@@ -5,13 +5,11 @@ from readline import readline
 from mock import MagicMock
 
 class TestReadline(unittest.TestCase):
-    def setUp(self):
-        self.socket = MagicMock()
-
     def iterate_readline(self, iterator, recv_calls, recv_len=1024):
-        self.socket.recv.side_effect = iterator + ("", )
+        socket = MagicMock()
+        socket.recv.side_effect = iterator + ("", )
 
-        it = readline(self.socket, recv_len)
+        it = readline(socket, recv_len)
         self.assertEquals(next(it), "foo")
         self.assertEquals(next(it), "bar")
         self.assertEquals(next(it), "baz")
@@ -19,7 +17,7 @@ class TestReadline(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(it)
 
-        self.assertEquals(len(self.socket.recv.mock_calls), recv_calls)
+        self.assertEquals(len(socket.recv.mock_calls), recv_calls)
 
     def test_read_buffer_until_end(self):
         self.iterate_readline(("foo\nbar\nbaz\n", ), 2)
