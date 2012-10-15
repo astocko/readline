@@ -5,11 +5,11 @@ from readline import readline
 from mock import MagicMock
 
 class TestReadline(unittest.TestCase):
-    def iterate_readline(self, iterator):
+    def iterate_readline(self, iterator, recv_len=1024):
         socket = MagicMock()
         socket.recv.side_effect = iterator + ("", )
 
-        it = readline(socket)
+        it = readline(socket, recv_len)
         self.assertEquals(next(it), "foo")
         self.assertEquals(next(it), "bar")
         self.assertEquals(next(it), "baz")
@@ -23,7 +23,7 @@ class TestReadline(unittest.TestCase):
         self.iterate_readline(("foo\nbar\nbaz", ))
 
     def test_recv_with_a_length_of_one(self):
-        self.iterate_readline(tuple("foo\nbar\nbaz\n"))
+        self.iterate_readline(tuple("foo\nbar\nbaz\n"), 1)
 
     def test_pass_something_that_doesnt_have_a_recv_method(self):
         with self.assertRaises(Exception):
